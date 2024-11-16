@@ -1,0 +1,53 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.5'
+    id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com.task'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    matheclipseVersion = "3.0.0"
+    mysqlConnectorVersion = "8.0.32"
+    openApiVersion = "2.6.0"
+    h2DatabaseVersion = "2.3.232"
+}
+
+dependencies {
+    implementation ("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation ("org.springframework.boot:spring-boot-starter-web")
+    implementation ("org.springframework.boot:spring-boot-starter-validation")
+    implementation ("org.matheclipse:matheclipse-core:${matheclipseVersion}")
+    implementation ("mysql:mysql-connector-java:${mysqlConnectorVersion}")
+    implementation ("org.springdoc:springdoc-openapi-starter-webmvc-ui:${openApiVersion}")
+
+    compileOnly 'org.projectlombok:lombok'
+
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation ("org.springframework.boot:spring-boot-starter-test")
+    testImplementation ("com.h2database:h2:${h2DatabaseVersion}")
+
+    testRuntimeOnly ("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
