@@ -43,7 +43,7 @@ public class PolynomialController {
 
     @ApiResponses({
             @ApiResponse(responseCode = "200", content = {@Content(mediaType = "application/json",
-                    schema = @Schema(implementation = String.class))}),
+                    schema = @Schema(implementation = Integer.class))}),
             @ApiResponse(responseCode = "400", content = {@Content(mediaType = "application/json",
                     schema = @Schema(implementation = ErrorResponse.class))})
     })

@@ -9,6 +9,7 @@ import com.task.polynomial.repository.PolynomialRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.matheclipse.core.eval.ExprEvaluator;
+import org.matheclipse.parser.client.SyntaxError;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -50,9 +51,9 @@ public class PolynomialService implements PolynomialOperation {
         try {
             ExprEvaluator evaluator = new ExprEvaluator();
             return evaluator.eval("Simplify(" + polynomial + ")").toString();
-        } catch (Exception e) {
+        } catch (SyntaxError e) {
             log.error("Error simplifying polynomial: {}", polynomial, e);
-            throw new RuntimeException("Error simplifying polynomial", e);
+            throw e;
         }
     }
 
@@ -91,13 +92,13 @@ public class PolynomialService implements PolynomialOperation {
     }
 
     private Number calculatePolynomialWithValue(EvaluateRequest evaluateRequest) {
+        String expression = evaluateRequest.getPolynomial().replace("x", String.valueOf(evaluateRequest.getX()));
         try {
             ExprEvaluator evaluator = new ExprEvaluator();
-            String expression = evaluateRequest.getPolynomial().replace("x", String.valueOf(evaluateRequest.getX()));
             return evaluator.eval(expression).toNumber();
-        } catch (Exception e) {
+        } catch (SyntaxError e) {
             log.error("Error calculating polynomial {} with value: {}", evaluateRequest.getPolynomial(), evaluateRequest.getX(), e);
-            throw new RuntimeException("Error calculating polynomial value: " + evaluateRequest.getPolynomial(), e);
+            throw e;
         }
     }
 

@@ -8,8 +8,7 @@ import com.task.polynomial.repository.EvaluationRepository;
 import com.task.polynomial.repository.PolynomialRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.matheclipse.core.eval.ExprEvaluator;
-import org.matheclipse.core.interfaces.IExpr;
+import org.matheclipse.parser.client.SyntaxError;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -17,10 +16,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -34,12 +33,6 @@ public class PolynomialServiceTest {
 
     @Mock
     private EvaluationRepository evaluationRepository;
-
-    @Mock
-    private ExprEvaluator evaluator;
-
-    @Mock
-    private IExpr iExpr;
 
     @InjectMocks
     private PolynomialService polynomialService;
@@ -74,6 +67,19 @@ public class PolynomialServiceTest {
     }
 
     @Test
+    void shouldSimplifyNotValidPolynomialWithFailure() {
+        SimplifiedRequest simplifiedRequest = new SimplifiedRequest();
+        simplifiedRequest.setPolynomial("2*x^^2+3*x-5+x^^2+x");
+
+        when(polynomialRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        assertThrows(SyntaxError.class, () -> polynomialService.simplify(simplifiedRequest));
+
+        verify(polynomialRepository, never()).save(any(PolynomialCache.class));
+    }
+
+
+    @Test
     void shouldEvaluatedNotCachedPolynomialSuccessfully() {
         EvaluateRequest evaluateRequest = new EvaluateRequest();
         evaluateRequest.setPolynomial("x^2+x+3");
@@ -101,6 +107,19 @@ public class PolynomialServiceTest {
         verify(evaluationRepository, times(1)).findByIdAndInputValue(anyLong(), anyInt());
         verify(evaluationRepository, never()).save(any(EvaluationCache.class));
         assertEquals(expectedOutputResult, result);
+    }
+
+    @Test
+    void shouldEvaluatedNotValidPolynomialWithFailure() {
+        EvaluateRequest evaluateRequest = new EvaluateRequest();
+        evaluateRequest.setPolynomial("x^^2++x+3");
+        evaluateRequest.setX(2);
+
+        when(evaluationRepository.findByIdAndInputValue(anyLong(), anyInt())).thenReturn(Optional.empty());
+
+        assertThrows(SyntaxError.class, () -> polynomialService.evaluate(evaluateRequest));
+
+        verify(evaluationRepository, never()).save(any(EvaluationCache.class));
     }
 
     private static Optional<PolynomialCache> createPolynomialCache(String simplifiedExpression) {
